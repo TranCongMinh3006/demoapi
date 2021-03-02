@@ -10,6 +10,7 @@ class Post(models.Model):
     content = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
     author = models.TextField()
+    category = models.CharField(max_length=255)
 
     def get_absolute_url(self):
         return reverse('blog_post_detail', args=[self.slug])
