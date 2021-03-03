@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
-from . models import Post, Comment
+from . models import Articles, Article_Tags, Tags, Article_Categorys, Categorys, User_Views, Comments
 from rest_framework import viewsets
 from rest_framework import permissions
-from . serializers import UserSerializer, GroupSerializer, PostSerializer , CommentSerializer
+from . serializers import ArticlesSerializer, UserSerializer, GroupSerializer, Article_CategorysSerializer, CategorysSerializer, Article_TagsSerializer, TagsSerializer, User_ViewsSerializer, CommentsSerializer
 from rest_framework.decorators import action
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -36,16 +37,18 @@ class GroupViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class PostViewSet(viewsets.ModelViewSet):
+class ArticlesViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.
     """
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    queryset = Articles.objects.all()
+    serializer_class = ArticlesSerializer
 
     @action(detail=False)
     def thethao(self, request):
-        thethao = Post.objects.filter(category='the thao')
+        thethao = Articles.objects.filter(article_categorys__categoryID=1)
+
+        # thethao = Article_Categorys.objects.filter(categoryID='the thao')
 
         page = self.paginate_queryset(thethao)
         if page is not None:
@@ -57,7 +60,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def new_article(self, request):
-        new_article = Post.objects.all().order_by('-created_on',)[:100]
+        new_article = Articles.objects.all().order_by('-created_on',)
 
         page = self.paginate_queryset(new_article)
         if page is not None:
@@ -67,69 +70,70 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(new_article, many=True)
         return Response(serializer.data)
 
-# class PostViewSetCategory(viewsets.ModelViewSet):
-#     """
-#     API endpoint that allows groups to be viewed or edited.
-#     """
-#     queryset = Post.objects.filter(category='thoi su')
-#     serializer_class = PostSerializer
+    @action(detail=False)
+    def hot_article(self, request):
+        number_of_articles = Articles.objects.all().count()
+        weight_score = 3
+        for i in range(1,number_of_articles+1):
+            click_score = Articles.objects.all()[i-1].click_counter
+            number_of_commnents = Comments.objects.filter(articleID=i).count()
+            hot_score1 =number_of_commnents*weight_score + click_score
+            Articles.objects.filter(id = i).update(hot_score=hot_score1)
 
-class CommentViewSet(viewsets.ModelViewSet):
+        hot_article = Articles.objects.all().order_by('-hot_score',)
+
+        page = self.paginate_queryset(hot_article)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(hot_article, many=True)
+        return Response(serializer.data)
+
+
+class CommentsViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.
     """
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
 
 
+class CategorysViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Categorys.objects.all()
+    serializer_class = CategorysSerializer
 
-#--------------------------------------------------------------------
+
+class Article_CategorysViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Article_Categorys.objects.all()
+    serializer_class = Article_CategorysSerializer
 
 
-# from django.contrib.auth.models import User
-# from . serializers import UserSerializer
-# from rest_framework import generics
-# from rest_framework.permissions import IsAdminUser
+class TagsViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Tags.objects.all()
+    serializer_class = TagsSerializer
 
-# class UserList(viewsets.ViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [IsAdminUser]
 
-#     def list(self, request):
-#         # Note the use of `get_queryset()` instead of `self.queryset`
-#         queryset = self.get_queryset()
-#         serializer = UserSerializer(queryset, many=True)
-#         return Response(serializer.data)
+class Article_TagsViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Article_Tags.objects.all()
+    serializer_class = Article_TagsSerializer
 
-#     def get_queryset(self):
-#         user = self.request.user
-#         return user.objects.all()
-    
-    # def get_object(self):
-    #     queryset = self.get_queryset()
-    #     filter = {}
-    #     for field in self.multiple_lookup_fields:
-    #         filter[field] = self.kwargs[field]
 
-    #     obj = get_object_or_404(queryset, **filter)
-    #     self.check_object_permissions(self.request, obj)
-    #     return obj
-
-    # def filter_queryset(self, queryset):
-    #     filter_backends = [CategoryFilter]
-
-    #     if 'geo_route' in self.request.query_params:
-    #         filter_backends = [GeoRouteFilter, CategoryFilter]
-    #     elif 'geo_point' in self.request.query_params:
-    #         filter_backends = [GeoPointFilter, CategoryFilter]
-
-    #     for backend in list(filter_backends):
-    #         queryset = backend().filter_queryset(self.request, queryset, view=self)
-
-    #     return queryset
-
-    # def get_serializer_class(self):
-    #     if self.request.user.is_staff:
-    #         return FullAccountSerializer
-    #     return BasicAccountSerializer
+class User_ViewsViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = User_Views.objects.all()
+    serializer_class = User_ViewsSerializer

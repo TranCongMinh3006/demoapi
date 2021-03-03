@@ -1,0 +1,9 @@
+http://127.0.0.1:8000/           trả về danh sách các api chính
+http://127.0.0.1:8000/users/     trả về danh sách các user 
+http://127.0.0.1:8000/articles/  trả về tất cả các bài viết
+http://127.0.0.1:8000/comments/  trả về tất cả các comments 
+http://127.0.0.1:8000/category/  trả về tất cả các category 
+http://127.0.0.1:8000/tags/      trả vể tất cả các tag
+http://127.0.0.1:8000/user_views/ trả về 8000/user_views
+http://127.0.0.1:8000/articles/new_article/  trả về tất cả các bài viết dựa theo thời gian gần nhất
+http://127.0.0.1:8000/articles/hot_article/  trả về các bài viết dựa theo thức tự độ hot từ cao xuống thấp
